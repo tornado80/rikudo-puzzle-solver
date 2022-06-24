@@ -44,9 +44,9 @@ for i in range(n_max):
             fixed_nums.append(k)
     cells.append(t)
 
-[r] = [i for i in find_next(lines[n_max+1])]
+[max_consts] = [i for i in find_next(lines[n_max+1])]
 consts = []
-for i in range(r):
+for i in range(max_consts):
     t = []
     for k in find_next(lines[n_max + 2 + i]):
         t.append(k)
@@ -82,7 +82,7 @@ def objective(gene):
     correct = 0.0
     for i in range(len(gene)):
         cells[empty_cells[i][0]][empty_cells[i][1]] = gene[i]
-    for i in range(r):
+    for i in range(max_consts):
         correct += 100*neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]])
     for i in range(1, max_num):
         if i in fixed_nums or i+1 in fixed_nums:
@@ -148,16 +148,18 @@ def mutation(gene):
     gene_values[i1], gene_values[i2] = gene_values[i2], gene_values[i1]
     return Gene(gene_values, objective(gene_values))
 
-'''model = GeneticAlgorithmModel(len(pure_gene), 300)
+model = GeneticAlgorithmModel(len(pure_gene), 300)
 model.compile(crossover, mutation, random_perm_genes, 0.8, 0.5)
-r = model.fit(1000, metrics=['best_objective']) #'mutates', 'crossovers', ...
+r = model.fit(10, metrics=['best_objective']) #'mutates', 'crossovers', ...
+
+
 import matplotlib.pyplot as plt
+
 plt.plot(range(len(r)), r)
 plt.xlabel('epochs')
 plt.ylabel('objective value')
-plt.show()'''
-g = random_perm_genes(1)
-
+#plt.show()
+g = model.best_sol()
 def show(gene):
     for i in range(len(gene.values)):
         cells[empty_cells[i][0]][empty_cells[i][1]] = gene.values[i]
@@ -167,9 +169,9 @@ def show(gene):
         for sj in si:
             s += str(sj) + ' '
         s += '\n'
-    s += str(r) + '\n'
-    for i in range(r):
+    s += str(max_consts) + '\n'
+    for i in range(max_consts):
         s += lines[n_max + 2 + i]
     return s
-print(g[0])
-print(show(g[0]))
+print(g)
+print(show(g))

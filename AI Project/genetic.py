@@ -94,3 +94,6 @@ class GeneticAlgorithmModel:
             epoch += 1
 
         return best_objectives
+
+    def best_sol(self):
+        return self.__choose_best(1)[0]
