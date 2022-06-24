@@ -178,7 +178,6 @@ def gene_to_str(gene):
         s += lines[n_max + 2 + i]
     return s
 
-
-draw_puzzle("".join(lines), gene_to_str(g))
+draw_puzzle(gene_to_str(g), empty_cells)
 
 
