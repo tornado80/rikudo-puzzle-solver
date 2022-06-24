@@ -61,33 +61,21 @@ class HexCell(QGraphicsPolygonItem):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, puzzle: Puzzle = None):
         super().__init__()
         self.setupUi(self)
         self.pushButton.clicked.connect(self.pushButton_clicked)
         self.scene: QGraphicsScene = QGraphicsScene()
         self.graphicsView.setScene(self.scene)
-        """
-        line1 = QGraphicsLineItem(0, 0, 100, 0)
-        line1.setPen(QPen(Qt.black))
-        line2 = QGraphicsLineItem(0, 0, 0, 100)
-        line2.setPen(QPen(Qt.green))
-        self.scene.addItem(line1)
-        self.scene.addItem(line2)
-        rect1 = QGraphicsRectItem(0, 0, 20, 20)
-        rect1.setPen(QPen(Qt.red))
-        rect2 = QGraphicsRectItem(5, 0, 20, 20)
-        rect2.setPen(QPen(Qt.cyan))
-        self.scene.addItem(rect1)
-        self.scene.addItem(rect2)
-        cell = HexCell(0, 0, 50)
-        cell.setBrush(QBrush(Qt.gray))
-        self.scene.addItem(cell)
-        """
+        if puzzle:
+            self.do_draw_puzzle(puzzle)
 
     def pushButton_clicked(self):
-        self.scene.clear()
         puzzle = Puzzle.parse(self.plainTextEdit.toPlainText())
+        self.do_draw_puzzle(puzzle)
+
+    def do_draw_puzzle(self, puzzle: Puzzle):
+        self.scene.clear()
         # assuming n and m are both odd
         # TODO: for other parity of n and m
         # TODO: transformation so that the center is (0, 0)
@@ -104,7 +92,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 elif cell == 0:
                     hex = HexCell(x, y, r, "", QBrush(Qt.white))
                 else:
-                    hex = HexCell(x, y, r, str(cell), QBrush(Qt.transparent))
+                    hex = HexCell(x, y, r, str(cell), QBrush(Qt.yellow))
                 self.scene.addItem(hex)
                 x += 2 * indent
             y += 3 * r / 2
@@ -129,12 +117,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class App(QApplication):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.main_window = MainWindow()
+    def __init__(self, puzzle: Puzzle = None):
+        super().__init__()
+        self.main_window = MainWindow(puzzle)
         self.main_window.show()
 
 
+def draw_puzzle(input: str):
+    puzzle = Puzzle.parse(input)
+    App(puzzle).exec_()
+
+
 if __name__ == "__main__":
-    app = App(sys.argv)
+    app = App()
     app.exec_()
