@@ -1,6 +1,6 @@
 import sys
 from math import sqrt
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from PySide2.QtCore import Qt, QPointF
 from PySide2.QtGui import QBrush, QPen, QPolygonF
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsLineItem, \
@@ -61,30 +61,36 @@ class HexCell(QGraphicsPolygonItem):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, puzzle: Puzzle = None):
+    def __init__(self, solved_puzzle: str = None, solved_cells: List[List] = None):
         super().__init__()
         self.setupUi(self)
         self.pushButton.clicked.connect(self.pushButton_clicked)
         self.scene: QGraphicsScene = QGraphicsScene()
         self.graphicsView.setScene(self.scene)
-        if puzzle:
-            self.do_draw_puzzle(puzzle)
+        self.cells: Dict[Cell, HexCell] = {}
+        if solved_puzzle:
+            self.plainTextEdit.setPlainText(solved_puzzle)
+            self.do_draw_puzzle()
+            if solved_cells:
+                self.highlight_solved_cells(solved_cells)
+
+    def highlight_solved_cells(self, solved_cells: List[List]):
+        for solved_cell in solved_cells:
+            self.cells[(solved_cell[0], solved_cell[1])].setBrush(QBrush(Qt.white))
 
     def pushButton_clicked(self):
-        puzzle = Puzzle.parse(self.plainTextEdit.toPlainText())
-        self.do_draw_puzzle(puzzle)
+        self.do_draw_puzzle()
 
-    def do_draw_puzzle(self, puzzle: Puzzle):
+    def do_draw_puzzle(self):
+        puzzle = Puzzle.parse(self.plainTextEdit.toPlainText())
         self.scene.clear()
-        # assuming n and m are both odd
-        # TODO: for other parity of n and m
-        # TODO: transformation so that the center is (0, 0)
+        self.cells.clear()
         r = self.spinBox.value()
         y = 0
         indent = sqrt(3) * r / 2
         for i, row in enumerate(puzzle.rows):
             x = 0 if len(row) == puzzle.column_count else indent
-            for cell in row:
+            for j, cell in enumerate(row):
                 if cell == -2:
                     hex = HexCell(x, y, r, "", QBrush(Qt.black))
                 elif cell == -1:
@@ -92,7 +98,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 elif cell == 0:
                     hex = HexCell(x, y, r, "", QBrush(Qt.white))
                 else:
-                    hex = HexCell(x, y, r, str(cell), QBrush(Qt.yellow))
+                    hex = HexCell(x, y, r, str(cell), QBrush(Qt.cyan))
+                self.cells[(i, j)] = hex
                 self.scene.addItem(hex)
                 x += 2 * indent
             y += 3 * r / 2
@@ -117,15 +124,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class App(QApplication):
-    def __init__(self, puzzle: Puzzle = None):
+    def __init__(self, solved_puzzle: str = None, solved_cells: List[List] = None):
         super().__init__()
-        self.main_window = MainWindow(puzzle)
+        self.main_window = MainWindow(solved_puzzle, solved_cells)
         self.main_window.show()
 
 
-def draw_puzzle(input: str):
-    puzzle = Puzzle.parse(input)
-    App(puzzle).exec_()
+def draw_puzzle(solved_puzzle: str, solved_cells: List[List] = None):
+    App(solved_puzzle, solved_cells).exec_()
 
 
 if __name__ == "__main__":
