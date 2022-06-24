@@ -78,12 +78,12 @@ def neighbor_cell(x1, x2):
         return False
 
 
-def objective(gene):
+def objective1(gene):
     correct = 0.0
     for i in range(len(gene)):
         cells[empty_cells[i][0]][empty_cells[i][1]] = gene[i]
     for i in range(max_consts):
-        correct += 100*neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]])
+        correct += 10*neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]])
     for i in range(1, max_num):
         if i in fixed_nums or i+1 in fixed_nums:
             correct += 100*neighbor_cell(find_int(cells, i), find_int(cells, i + 1))
@@ -93,21 +93,28 @@ def objective(gene):
     return correct
 
 
-def dist(x1, x2):
-    if abs(x1[0]-x2[0]) > 1:
-        return abs(x1[0]-x2[0])
-    return 0
+dist = {}
+def bfs(i1, j1, i2, j2):
+    explore = set()
 
+for i1 in range(len(cells)):
+    for j1 in range(len(cells[i1])):
+        for i2 in range(len(cells)):
+            for j2 in range(len(cells[i1])):
+                explore = set()
 
-def objective1(item):
+                dist[(i1, j1, i2, j2)] = k
+def objective(item):
     miss = 0.0
     for i in range(len(item)):
         cells[empty_cells[i][0]][empty_cells[i][1]] = item[i]
     for i in range(r):
         miss += 100*(1-neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]]))
     for i in range(1, max_num):
-        miss += dist(find_int(cells, i), find_int(cells, i+1))
-        miss += (1-neighbor_cell(find_int(cells, i), find_int(cells, i + 1)))
+        if i in fixed_nums or i + 1 in fixed_nums:
+            miss += 100 * dist(find_int(cells, i), find_int(cells, i+1))
+        else:
+            miss += 1 * dist(find_int(cells, i), find_int(cells, i + 1))
     return 1/miss
 
 
@@ -148,9 +155,10 @@ def mutation(gene):
     gene_values[i1], gene_values[i2] = gene_values[i2], gene_values[i1]
     return Gene(gene_values, objective(gene_values))
 
+
 model = GeneticAlgorithmModel(len(pure_gene), 500)
 model.compile(crossover, mutation, random_perm_genes, 0.8, 0.5)
-r = model.fit(10, metrics=['best_objective']) #'mutates', 'crossovers', ...
+r = model.fit(100, metrics=['best_objective']) #'mutates', 'crossovers', ...
 
 '''
 import matplotlib.pyplot as plt
@@ -177,6 +185,7 @@ def gene_to_str(gene):
     for i in range(max_consts):
         s += lines[n_max + 2 + i]
     return s
+
 
 draw_puzzle(gene_to_str(g), empty_cells)
 
