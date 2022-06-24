@@ -17,28 +17,24 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(863, 684)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_2 = QGridLayout(self.centralwidget)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.splitter = QSplitter(self.centralwidget)
-        self.splitter.setObjectName(u"splitter")
-        self.splitter.setOrientation(Qt.Horizontal)
-        self.gridLayoutWidget = QWidget(self.splitter)
-        self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayout = QGridLayout(self.gridLayoutWidget)
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.spinBox = QSpinBox(self.gridLayoutWidget)
+        self.spinBox = QSpinBox(self.centralwidget)
         self.spinBox.setObjectName(u"spinBox")
         self.spinBox.setMinimum(10)
         self.spinBox.setMaximum(100)
-        self.spinBox.setValue(20)
+        self.spinBox.setValue(40)
 
         self.gridLayout.addWidget(self.spinBox, 2, 1, 1, 1)
 
-        self.plainTextEdit = QPlainTextEdit(self.gridLayoutWidget)
+        self.plainTextEdit = QPlainTextEdit(self.centralwidget)
         self.plainTextEdit.setObjectName(u"plainTextEdit")
         font = QFont()
         font.setFamily(u"Code New Roman")
@@ -46,12 +42,12 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.plainTextEdit, 0, 0, 1, 2)
 
-        self.label = QLabel(self.gridLayoutWidget)
+        self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
 
         self.gridLayout.addWidget(self.label, 2, 0, 1, 1)
 
-        self.pushButton = QPushButton(self.gridLayoutWidget)
+        self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
         sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -62,12 +58,20 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.pushButton, 3, 0, 1, 2)
 
         self.gridLayout.setColumnStretch(1, 1)
-        self.splitter.addWidget(self.gridLayoutWidget)
-        self.graphicsView = QGraphicsView(self.splitter)
-        self.graphicsView.setObjectName(u"graphicsView")
-        self.splitter.addWidget(self.graphicsView)
 
-        self.gridLayout_2.addWidget(self.splitter, 0, 0, 1, 1)
+        self.horizontalLayout.addLayout(self.gridLayout)
+
+        self.graphicsView = QGraphicsView(self.centralwidget)
+        self.graphicsView.setObjectName(u"graphicsView")
+        font1 = QFont()
+        font1.setPointSize(16)
+        self.graphicsView.setFont(font1)
+
+        self.horizontalLayout.addWidget(self.graphicsView)
+
+        self.horizontalLayout.setStretch(1, 1)
+
+        self.gridLayout_2.addLayout(self.horizontalLayout, 0, 0, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
 

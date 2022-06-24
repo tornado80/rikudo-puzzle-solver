@@ -64,6 +64,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, solved_puzzle: str = None, solved_cells: List[List] = None):
         super().__init__()
         self.setupUi(self)
+        self.showMaximized()
         self.pushButton.clicked.connect(self.pushButton_clicked)
         self.scene: QGraphicsScene = QGraphicsScene()
         self.graphicsView.setScene(self.scene)
