@@ -86,7 +86,7 @@ def objective(gene):
         correct += 100*neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]])
     for i in range(1, max_num):
         if i in fixed_nums or i+1 in fixed_nums:
-            correct += 1000*neighbor_cell(find_int(cells, i), find_int(cells, i + 1))
+            correct += 100*neighbor_cell(find_int(cells, i), find_int(cells, i + 1))
         else:
             correct += neighbor_cell(find_int(cells, i), find_int(cells, i+1))
 
@@ -148,22 +148,26 @@ def mutation(gene):
     gene_values[i1], gene_values[i2] = gene_values[i2], gene_values[i1]
     return Gene(gene_values, objective(gene_values))
 
-model = GeneticAlgorithmModel(len(pure_gene), 300)
+model = GeneticAlgorithmModel(len(pure_gene), 500)
 model.compile(crossover, mutation, random_perm_genes, 0.8, 0.5)
 r = model.fit(10, metrics=['best_objective']) #'mutates', 'crossovers', ...
 
-
+'''
 import matplotlib.pyplot as plt
-
 plt.plot(range(len(r)), r)
 plt.xlabel('epochs')
 plt.ylabel('objective value')
-#plt.show()
+plt.show()
+'''
+
+from gui import draw_puzzle
+
 g = model.best_sol()
-def show(gene):
+
+
+def gene_to_str(gene):
     for i in range(len(gene.values)):
         cells[empty_cells[i][0]][empty_cells[i][1]] = gene.values[i]
-    print(cells)
     s = str(n_max) + ' ' + str(m_max) + ' ' + str(max_num) + '\n'
     for si in cells:
         for sj in si:
@@ -173,5 +177,8 @@ def show(gene):
     for i in range(max_consts):
         s += lines[n_max + 2 + i]
     return s
-print(g)
-print(show(g))
+
+
+draw_puzzle("".join(lines), gene_to_str(g))
+
+
