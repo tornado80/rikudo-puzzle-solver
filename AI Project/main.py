@@ -24,8 +24,8 @@ def find_int(x, k):
     for i in range(len(x)):
         for j in range(len(x[i])):
             if x[i][j] == k:
-                return [i, j]
-    return [-1, -1]
+                return(i, j)
+    return (-1, -1)
 
 
 with open('input.txt') as f:
@@ -88,34 +88,85 @@ def objective1(gene):
         if i in fixed_nums or i+1 in fixed_nums:
             correct += 100*neighbor_cell(find_int(cells, i), find_int(cells, i + 1))
         else:
-            correct += neighbor_cell(find_int(cells, i), find_int(cells, i+1))
+            correct += neighbor_cell(find_int(cells, i), find_int(cells, i + 1))
 
     return correct
 
 
 dist = {}
-def bfs(i1, j1, i2, j2):
-    explore = set()
+
+
+def neighbours(v):
+    i, j = v
+    tore = []
+    if len(cells[i]) == m_max:
+        if i != 0 and j != 0:
+            tore.append((i - 1, j - 1))
+        if i != 0 and j != m_max-1:
+            tore.append((i - 1, j))
+        if i != n_max - 1 and j != 0:
+            tore.append((i + 1, j - 1))
+        if i != n_max - 1 and j != m_max-1:
+            tore.append((i + 1, j))
+    if len(cells[i]) == m_max-1:
+        if i != 0:
+            tore.append((i - 1, j))
+            tore.append((i - 1, j + 1))
+        if i != n_max - 1:
+            tore.append((i + 1, j))
+            tore.append((i + 1, j + 1))
+    if j != 0:
+        tore.append((i, j - 1))
+    if j != len(cells[i])-1:
+        tore.append((i, j + 1))
+    return tore
+
+
+def bfs(a1, a2):
+    if a1 == a2:
+        return 0
+    ans = 0
+    explore = {a1: 0}
+    q = [a1]
+    while len(q) != 0:
+        v = q.pop(0)
+        for u in neighbours(v):
+            if cells[u[0]][u[1]] < 0 or u in explore:
+                continue
+            explore[u] = explore[v]+1
+            q.append(u)
+            if u == a2:
+                return explore[u]
+    return -1
+
 
 for i1 in range(len(cells)):
     for j1 in range(len(cells[i1])):
         for i2 in range(len(cells)):
-            for j2 in range(len(cells[i1])):
-                explore = set()
+            for j2 in range(len(cells[i2])):
+                dist[((i1, j1), (i2, j2))] = bfs((i1, j1), (i2, j2))
 
-                dist[(i1, j1, i2, j2)] = k
+
 def objective(item):
     miss = 0.0
+    tt = 0
     for i in range(len(item)):
         cells[empty_cells[i][0]][empty_cells[i][1]] = item[i]
-    for i in range(r):
-        miss += 100*(1-neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]]))
+    for i in range(max_consts):
+        tt += (neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]]))
     for i in range(1, max_num):
         if i in fixed_nums or i + 1 in fixed_nums:
-            miss += 100 * dist(find_int(cells, i), find_int(cells, i+1))
+            miss += 10 * (10-dist[(find_int(cells, i), find_int(cells, i+1))])**3
         else:
-            miss += 1 * dist(find_int(cells, i), find_int(cells, i + 1))
-    return 1/miss
+            miss += 10 * (10-dist[(find_int(cells, i), find_int(cells, i + 1))])**2
+
+    t = 0
+    for i in range(1, max_num):
+        if dist[find_int(cells, i), find_int(cells, i+1)] != 1:
+            break
+        t += 1
+
+    return miss + t + 10*tt**3
 
 
 def random_perm_genes(n):
@@ -156,17 +207,17 @@ def mutation(gene):
     return Gene(gene_values, objective(gene_values))
 
 
-model = GeneticAlgorithmModel(len(pure_gene), 500)
-model.compile(crossover, mutation, random_perm_genes, 0.8, 0.5)
-r = model.fit(100, metrics=['best_objective']) #'mutates', 'crossovers', ...
+model = GeneticAlgorithmModel(len(pure_gene), 1000)
+model.compile(crossover, mutation, random_perm_genes, 0.1, 2)
+r = model.fit(500, metrics=['best_objective']) #'mutates', 'crossovers', ...
 
-'''
-import matplotlib.pyplot as plt
-plt.plot(range(len(r)), r)
-plt.xlabel('epochs')
-plt.ylabel('objective value')
-plt.show()
-'''
+
+#import matplotlib.pyplot as plt
+#plt.plot(range(len(r)), r)
+#plt.xlabel('epochs')
+#plt.ylabel('objective value')
+#plt.show()
+
 
 from gui import draw_puzzle
 
