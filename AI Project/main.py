@@ -58,8 +58,6 @@ for i in range(n_max):
         if cells[i][j] == 0:
             empty_cells.append([i, j])
 
-print(empty_cells)
-
 
 def neighbor_num(a, b):
     return abs(a-b) == 1
@@ -80,10 +78,10 @@ def neighbor_cell(x1, x2):
         return False
 
 
-def objective(item):
+def objective(gene):
     correct = 0.0
-    for i in range(len(item)):
-        cells[empty_cells[i][0]][empty_cells[i][1]] = item[i]
+    for i in range(len(gene)):
+        cells[empty_cells[i][0]][empty_cells[i][1]] = gene[i]
     for i in range(r):
         correct += 100*neighbor_num(cells[consts[i][0]][consts[i][1]], cells[consts[i][2]][consts[i][3]])
     for i in range(1, max_num):
@@ -112,6 +110,7 @@ def objective1(item):
         miss += (1-neighbor_cell(find_int(cells, i), find_int(cells, i + 1)))
     return 1/miss
 
+
 def random_perm_genes(n):
     solution = []
     for i in range(1, max_num+1):
@@ -128,12 +127,12 @@ pure_gene = []
 for i in range(1, max_num+1):
     if find_int(cells, i)[0] == -1:
         pure_gene.append(i)
+transform = {pure_gene[i]: i for i in range(len(pure_gene))}
 
 
 def crossover(parent1, parent2):
     if len(parent1.values) != len(parent2.values):
         raise Exception('Gene sizes are not equal!!')
-    transform = {pure_gene[i]: i for i in range(len(pure_gene))}
     child1, child2 = [], []
     for u in parent1.values:
         child1.append(parent2.values[transform[u]])
@@ -149,11 +148,28 @@ def mutation(gene):
     gene_values[i1], gene_values[i2] = gene_values[i2], gene_values[i1]
     return Gene(gene_values, objective(gene_values))
 
-model = GeneticAlgorithmModel(len(pure_gene), 300)
+'''model = GeneticAlgorithmModel(len(pure_gene), 300)
 model.compile(crossover, mutation, random_perm_genes, 0.8, 0.5)
 r = model.fit(1000, metrics=['best_objective']) #'mutates', 'crossovers', ...
 import matplotlib.pyplot as plt
 plt.plot(range(len(r)), r)
 plt.xlabel('epochs')
 plt.ylabel('objective value')
-plt.show()
+plt.show()'''
+g = random_perm_genes(1)
+
+def show(gene):
+    for i in range(len(gene.values)):
+        cells[empty_cells[i][0]][empty_cells[i][1]] = gene.values[i]
+    print(cells)
+    s = str(n_max) + ' ' + str(m_max) + ' ' + str(max_num) + '\n'
+    for si in cells:
+        for sj in si:
+            s += str(sj) + ' '
+        s += '\n'
+    s += str(r) + '\n'
+    for i in range(r):
+        s += lines[n_max + 2 + i]
+    return s
+print(g[0])
+print(show(g[0]))
