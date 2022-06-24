@@ -28,7 +28,7 @@ def find_int(x, k):
     return [-1, -1]
 
 
-with open('D:\\Projects\\AI Project\\input.txt') as f:
+with open('input.txt') as f:
     lines = f.readlines()
 
 (n_max, m_max, max_num) = [i for i in find_next(lines[0])]
