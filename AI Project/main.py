@@ -136,11 +136,6 @@ class Behaviour(GeneticAlgorithmBehaviour):
         return True
 
 
-with open('input1.txt') as f:
-    puzzle = Puzzle.parse(f.read())
-
-behaviour = Behaviour(puzzle)
-
 """
 good_gene = Gene([31, 12, 29, 32, 13, 10, 9, 33, 14, 16, 8, 27, 34, 17, 7, 25, 35, 18, 24, 2, 4, 22, 21, 20], 0)
 bad_gene = Gene([31, 12, 29, 32, 13, 14, 10, 33, 34, 9, 8, 27, 35, 16, 7, 25, 18, 17, 24, 2, 4, 22, 21, 20], 0)
@@ -149,8 +144,18 @@ print(behaviour.objective(bad_gene.values))
 draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells)
 """
 
-model = GeneticAlgorithmModel(behaviour, 1000, 0.1, 2)
-objective_values = model.fit(300, metrics=['best_objective'])  # 'mutates', 'crossovers', ...
-best_solution = model.best_solution()
-puzzle.set_empty_cells(best_solution.values)
-draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells, objective_values)
+
+def solve(input_path, metrics=None):
+    with open(input_path) as f:
+        puzzle = Puzzle.parse(f.read())
+    behaviour = Behaviour(puzzle)
+    model = GeneticAlgorithmModel(behaviour, 500, 0.1, 2)
+    objective_values = model.fit(300, metrics)  # 'mutates', 'crossovers', ...
+    best_solution = model.best_solution()
+    puzzle.set_empty_cells(best_solution.values)
+    return puzzle, objective_values
+
+
+if __name__ == "__main__":
+    puzzle, objective_values = solve("tests/input2.txt", metrics=['best_objective'])
+    draw_puzzle(str(puzzle), puzzle.empty_cells, objective_values)

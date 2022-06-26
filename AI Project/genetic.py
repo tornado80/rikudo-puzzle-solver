@@ -64,6 +64,8 @@ class GeneticAlgorithmModel:
         self.objectives.pop(i1)
 
     def __print_on_epoch(self, epoch, metrics):
+        if not metrics:
+            return
         print('Epoch #' + str(epoch) + ' -->', end='')
         if 'best_objective' in metrics:
             t = np.argmax(self.objectives)
@@ -85,7 +87,7 @@ class GeneticAlgorithmModel:
                 parent1, parent2 = self.__choose_weighted(2)
                 child1, child2 = self.__behaviour.crossover(parent1.copy(), parent2.copy())
                 self.extend([child1, child2])
-                if 'crossovers' in metrics:
+                if metrics and 'crossovers' in metrics:
                     print(
                         f'Crossovering:\n  {parent1.values} \n  {parent2.values} \n  childs: \n  {child1.values} \n  {child2.values}')
                 crossover_index += 2
@@ -95,7 +97,7 @@ class GeneticAlgorithmModel:
                 to_mutate = random.choice(self.population)
                 mutated = self.__behaviour.mutation(to_mutate.copy())
                 self.extend([mutated])
-                if 'mutates' in metrics:
+                if metrics and 'mutates' in metrics:
                     print(f'Mutating:\n  {to_mutate.values} \n  mutated: \n  {mutated.values}')
                 mutation_index += 1
 
