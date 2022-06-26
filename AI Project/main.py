@@ -41,12 +41,14 @@ class Behaviour(GeneticAlgorithmBehaviour):
         # in the following code we are assuming 1 and max_num are always fixed
         i = 1
         total_fitness = 1
+        max_total_fitness = 1
         while i < self.puzzle.max_num:
             # each segment is the numbers between two successive fixed nums
-            segment_size = 0
+            segment_size = 1
             i += 1
             max_distance_in_segment = 1
             while True:  # iterating over the numbers in a segment
+                segment_size += 1
                 previous_cell = self.puzzle.find_coordinates(i - 1)
                 current_cell = self.puzzle.find_coordinates(i)
                 max_distance_in_segment = max(
@@ -56,11 +58,16 @@ class Behaviour(GeneticAlgorithmBehaviour):
                 if i in self.puzzle.fixed_nums:
                     break
                 i += 1
-                segment_size += 1
             max_segment_fitness = 2 ** segment_size
-            segment_fitness = max_segment_fitness - 2 ** max_distance_in_segment
+            segment_fitness = max(1, max_segment_fitness - 2 ** (max_distance_in_segment - 1))
             total_fitness *= segment_fitness
-        return total_fitness
+            max_total_fitness *= max_segment_fitness - 1
+        dots_satisfied = 0
+        for i in range(self.puzzle.dot_count):
+            dots_satisfied += self.puzzle.is_successor(self.puzzle.dots[i][0], self.puzzle.dots[i][1])
+        y = total_fitness / max_total_fitness * 100
+        x = dots_satisfied / (self.puzzle.max_num - 1) * 100
+        return x * 0.1 + y * 0.9
 
     def fitness(self, gene: List[int]):
         mx = 0
@@ -118,17 +125,13 @@ class Behaviour(GeneticAlgorithmBehaviour):
         gene_values[i1], gene_values[i2] = gene_values[i2], gene_values[i1]
         return Gene(gene_values, self.objective(gene_values))
 
-    def is_goal(self, gene: Gene, t=False) -> bool:
+    def is_goal(self, gene: Gene) -> bool:
         self.puzzle.set_empty_cells(gene.values)
         for i in range(1, self.puzzle.max_num):
             if self.puzzle.pairwise_distances[self.puzzle.find_coordinates(i), self.puzzle.find_coordinates(i + 1)] != 1:
-                if t:
-                    print('find_c '+str(i))
                 return False
         for cell1, cell2 in self.puzzle.dots:
             if not self.puzzle.is_successor(cell1, cell2):
-                if t:
-                    print('is_s '+str(cell1)+'  '+str(cell2))
                 return False
         return True
 
@@ -139,10 +142,10 @@ with open('input1.txt') as f:
 behaviour = Behaviour(puzzle)
 
 """
-gene = Gene([31, 12, 29, 32, 13, 10, 9, 33, 14, 16, 8, 27, 34, 17, 7, 25, 35, 18, 24, 2, 4, 22, 21, 20], 0)
-puzzle.set_empty_cells(gene.values)
-print(behaviour.objective(gene.values))
-print(puzzle.find_coordinates(8))
+good_gene = Gene([31, 12, 29, 32, 13, 10, 9, 33, 14, 16, 8, 27, 34, 17, 7, 25, 35, 18, 24, 2, 4, 22, 21, 20], 0)
+bad_gene = Gene([31, 12, 29, 32, 13, 14, 10, 33, 34, 9, 8, 27, 35, 16, 7, 25, 18, 17, 24, 2, 4, 22, 21, 20], 0)
+puzzle.set_empty_cells(bad_gene.values)
+print(behaviour.objective(bad_gene.values))
 draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells)
 """
 
@@ -150,8 +153,4 @@ model = GeneticAlgorithmModel(behaviour, 1000, 0.1, 2)
 objective_values = model.fit(300, metrics=['best_objective'])  # 'mutates', 'crossovers', ...
 best_solution = model.best_solution()
 puzzle.set_empty_cells(best_solution.values)
-print(behaviour.fitness_evaluations)
-print(behaviour.is_goal(best_solution, True))
 draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells, objective_values)
-
-
