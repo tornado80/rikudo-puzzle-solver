@@ -20,13 +20,10 @@ class Puzzle:
         self.dot_count: int = len(dots)
         self.max_num: int = max_num
         self.row_count, self.column_count = dimensions
-
         self.pairwise_distances: dict[(Cell, Cell): int] = {}
         self.calculate_cells_pairwise_distances()
-
         self.coordinate_num: dict[int: Cell] = {}
-        self.calculate_fixed_cells_coordinate_num()
-        self.calculate_empty_cells_coordinate_num()
+        self.calculate_coordinates()
 
     def __str__(self):
         lines = [f"{self.row_count} {self.column_count} {self.max_num}"]
@@ -41,6 +38,7 @@ class Puzzle:
         # TODO: efficient lookup : we can make empty_cells hashmap (20 * 36)
         for i, filled_cell in enumerate(filled_cells):
             self.cells[self.empty_cells[i][0]][self.empty_cells[i][1]] = filled_cell
+        self.calculate_coordinates()
 
     @classmethod
     def parse(cls, input: str):
@@ -149,4 +147,5 @@ class Puzzle:
             self.coordinate_num[self.cells[i][j]] = (i, j)
 
     def calculate_coordinates(self):
-        calculate_fixed_cells_coordinate_num()
+        self.calculate_fixed_cells_coordinate_num()
+        self.calculate_empty_cells_coordinate_num()

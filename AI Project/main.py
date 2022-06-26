@@ -35,7 +35,6 @@ class Behaviour(GeneticAlgorithmBehaviour):
     def objective(self, gene: List[int]):
         self.fitness_evaluations += 1
         self.puzzle.set_empty_cells(gene)
-        self.puzzle.calculate_empty_cells_coordinate_num()
         return self.fitness(gene)
 
     def fitness1(self, gene: List[int]):
@@ -88,7 +87,7 @@ class Behaviour(GeneticAlgorithmBehaviour):
             if self.puzzle.pairwise_distances[self.puzzle.find_coordinates(i), self.puzzle.find_coordinates(i + 1)] != 1:
                 break
             t += 1
-        mx += 10 * self.puzzle.max_num - 1
+        mx += self.puzzle.max_num - 1
         return (miss + t + 10*tt**3)/mx*100
 
     def random_population(self, population_size: int):
@@ -138,18 +137,21 @@ with open('input1.txt') as f:
     puzzle = Puzzle.parse(f.read())
 
 behaviour = Behaviour(puzzle)
-#puzzle.set_empty_cells([31, 12, 29, 32, 13, 10, 9, 33, 14, 16, 8, 27, 34, 17, 7, 25, 35, 18, 24, 2, 4, 22, 21, 20])
+
+"""
+gene = Gene([31, 12, 29, 32, 13, 10, 9, 33, 14, 16, 8, 27, 34, 17, 7, 25, 35, 18, 24, 2, 4, 22, 21, 20], 0)
+puzzle.set_empty_cells(gene.values)
+print(behaviour.objective(gene.values))
+print(puzzle.find_coordinates(8))
+draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells)
+"""
 
 model = GeneticAlgorithmModel(behaviour, 1000, 0.1, 2)
-objective_values = model.fit(2, metrics=['best_objective'])  # 'mutates', 'crossovers', ...
-print(puzzle.find_coordinates(7))
-draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells)
-
+objective_values = model.fit(300, metrics=['best_objective'])  # 'mutates', 'crossovers', ...
 best_solution = model.best_solution()
 puzzle.set_empty_cells(best_solution.values)
 print(behaviour.fitness_evaluations)
 print(behaviour.is_goal(best_solution, True))
-
 draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells, objective_values)
 
 
