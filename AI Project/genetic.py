@@ -1,6 +1,8 @@
 import random
+from abc import ABC, abstractmethod
 from typing import Callable, List, Any
 import numpy as np
+
 
 class Gene:
     def __init__(self, values: list, objective_val: float = 0):
@@ -10,25 +12,36 @@ class Gene:
     def copy(self):
         return Gene(self.values.copy(), self.objective_val)
 
+
+class GeneticAlgorithmBehaviour(ABC):
+    @abstractmethod
+    def crossover(self, parent1: Gene, parent2: Gene):
+        pass
+
+    @abstractmethod
+    def mutation(self, gene: Gene):
+        pass
+
+    @abstractmethod
+    def is_goal(self, gene: Gene):
+        pass
+
+    @abstractmethod
+    def random_population(self, population_size: int):
+        pass
+
+
 class GeneticAlgorithmModel:
-    def __init__(self, gene_size: int, population_size: int = 50):
-        self.__crossover_fun: Callable[[Gene, Gene], (Gene, Gene)] = None
-        self.__mutation_fun: Callable[[Gene], Gene] = None
+    def __init__(self, behaviuor: GeneticAlgorithmBehaviour, population_size: int, crossover_coeff: float, mutation_coeff: float):
         self.__crossover_num = 0
         self.__mutation_num = 0
-        self.__random_population_fun: Callable[[int], list[Gene]] = None
-        self.__gene_size: int = gene_size
         self.__population_size: int = population_size
         self.population: list[Gene] = []
         self.objectives: list[float] = []
         self.__objectives_sum: float = 0
-
-    def compile(self, crossover_fun, mutation_fun, random_population_fun, crossover_coeff, mutation_coeff):
-        self.__crossover_fun = crossover_fun
-        self.__mutation_fun = mutation_fun
-        self.__random_population_fun = random_population_fun
         self.__crossover_num = self.__population_size * crossover_coeff
         self.__mutation_num = self.__population_size * mutation_coeff
+        self.__behaviour = behaviuor
 
     def __choose_weighted(self, k):
         objectives_sum = sum(self.objectives)
@@ -60,7 +73,7 @@ class GeneticAlgorithmModel:
 
     def fit(self, epochs, metrics=[]):
         epoch = 1
-        self.population = self.__random_population_fun(self.__population_size)
+        self.population = self.__behaviour.random_population(self.__population_size)
         self.objectives = [t.objective_val for t in self.population]
         self.__print_on_epoch(0, metrics)
         best_objectives = []
@@ -70,7 +83,7 @@ class GeneticAlgorithmModel:
             crossover_index = 0
             while crossover_index < self.__crossover_num:
                 parent1, parent2 = self.__choose_weighted(2)
-                child1, child2 = self.__crossover_fun(parent1.copy(), parent2.copy())
+                child1, child2 = self.__behaviour.crossover(parent1.copy(), parent2.copy())
                 self.extend([child1, child2])
                 if 'crossovers' in metrics:
                     print(
@@ -80,7 +93,7 @@ class GeneticAlgorithmModel:
             mutation_index = 0
             while mutation_index < self.__mutation_num:
                 to_mutate = random.choice(self.population)
-                mutated = self.__mutation_fun(to_mutate.copy())
+                mutated = self.__behaviour.mutation(to_mutate.copy())
                 self.extend([mutated])
                 if 'mutates' in metrics:
                     print(f'Mutating:\n  {to_mutate.values} \n  mutated: \n  {mutated.values}')
@@ -90,7 +103,10 @@ class GeneticAlgorithmModel:
             self.objectives = [t.objective_val for t in self.population]
 
             self.__print_on_epoch(epoch, metrics)
-            best_objectives.append(self.__choose_best(1)[0].objective_val)
+            best_gene = self.__choose_best(1)[0]
+            best_objectives.append(best_gene.objective_val)
+            if self.__behaviour.is_goal(best_gene):
+                return best_objectives
             epoch += 1
 
         return best_objectives
