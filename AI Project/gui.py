@@ -83,6 +83,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     hex = HexCell(x, y, r, "", QBrush(Qt.gray))
                 elif cell == 0:
                     hex = HexCell(x, y, r, "", QBrush(Qt.white))
+                elif cell == 1:
+                    hex = HexCell(x, y, r, str(cell), QBrush(Qt.yellow))
+                elif cell == puzzle.max_num:
+                    hex = HexCell(x, y, r, str(cell), QBrush(Qt.yellow))
                 else:
                     hex = HexCell(x, y, r, str(cell), QBrush(Qt.cyan))
                 self.cells[(i, j)] = hex
