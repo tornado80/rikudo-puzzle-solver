@@ -20,8 +20,13 @@ class Puzzle:
         self.dot_count: int = len(dots)
         self.max_num: int = max_num
         self.row_count, self.column_count = dimensions
+
         self.pairwise_distances: dict[(Cell, Cell): int] = {}
         self.calculate_cells_pairwise_distances()
+
+        self.coordinate_num: dict[int: Cell] = {}
+        self.calculate_fixed_cells_coordinate_num()
+        self.calculate_empty_cells_coordinate_num()
 
     def __str__(self):
         lines = [f"{self.row_count} {self.column_count} {self.max_num}"]
@@ -60,12 +65,14 @@ class Puzzle:
         return cls(m, (x, y), cells, dots, empty_cells, fixed_nums)
 
     def find_coordinates(self, k: int) -> Union[Cell, None]:
-        if k in self.fixed_nums:
+        '''if k in self.fixed_nums:
             return self.fixed_nums[k]
         for i, j in self.empty_cells:
             if self.cells[i][j] == k:
                 return i, j
-        return None
+        return None'''
+        # we assume that k is in coordinates and cells filled in the gene
+        return self.coordinate_num[k]
 
     def is_successor(self, cell1: Cell, cell2: Cell) -> bool:
         return abs(self.cells[cell1[0]][cell1[1]] - self.cells[cell2[0]][cell2[1]]) == 1
@@ -131,3 +138,15 @@ class Puzzle:
                 for i2 in range(self.row_count):
                     for j2 in range(len(self.cells[i2])):
                         self.pairwise_distances[((i1, j1), (i2, j2))] = self.bfs((i1, j1), (i2, j2))
+
+    def calculate_fixed_cells_coordinate_num(self):
+        #for (k, v) in self.fixed_nums.items():
+        #    self.coordinate_num[k] = v
+        self.coordinate_num = self.fixed_nums.copy()
+
+    def calculate_empty_cells_coordinate_num(self):
+        for i, j in self.empty_cells:
+            self.coordinate_num[self.cells[i][j]] = (i, j)
+
+    def calculate_coordinates(self):
+        calculate_fixed_cells_coordinate_num()

@@ -16,7 +16,7 @@ class Behaviour(GeneticAlgorithmBehaviour):
     def calculate_transformation_of_solved_nums_to_permutation(self):
         pure_gene = []
         for i in range(1, self.puzzle.max_num + 1):
-            if not self.puzzle.find_coordinates(i):
+            if i not in self.puzzle.fixed_nums:
                 pure_gene.append(i)
         self.transform = {pure_gene[i]: i for i in range(len(pure_gene))}
 
@@ -35,6 +35,7 @@ class Behaviour(GeneticAlgorithmBehaviour):
     def objective(self, gene: List[int]):
         self.fitness_evaluations += 1
         self.puzzle.set_empty_cells(gene)
+        self.puzzle.calculate_empty_cells_coordinate_num()
         return self.fitness(gene)
 
     def fitness1(self, gene: List[int]):
@@ -63,32 +64,37 @@ class Behaviour(GeneticAlgorithmBehaviour):
         return total_fitness
 
     def fitness(self, gene: List[int]):
+        mx = 0
         miss = 0.0
         tt = 0
         for i in range(self.puzzle.dot_count):
             tt += self.puzzle.is_successor(self.puzzle.dots[i][0], self.puzzle.dots[i][1])
+
+        mx = 10*(self.puzzle.dot_count**3)
         for i in range(1, self.puzzle.max_num):
             if i in self.puzzle.fixed_nums or i + 1 in self.puzzle.fixed_nums:
                 miss += 10 * (10 - self.puzzle.pairwise_distances[
                     (self.puzzle.find_coordinates(i), self.puzzle.find_coordinates(i + 1))
                 ]) ** 3
+                mx += 10*(9**3)
             else:
                 miss += 10 * (10-self.puzzle.pairwise_distances[
                     (self.puzzle.find_coordinates(i), self.puzzle.find_coordinates(i + 1))
                 ]) ** 2
-
+                mx += 10 * (9 ** 2)
         t = 0
+
         for i in range(1, self.puzzle.max_num):
             if self.puzzle.pairwise_distances[self.puzzle.find_coordinates(i), self.puzzle.find_coordinates(i + 1)] != 1:
                 break
             t += 1
-
-        return miss + t + 10*tt**3
+        mx += 10 * self.puzzle.max_num - 1
+        return (miss + t + 10*tt**3)/mx*100
 
     def random_population(self, population_size: int):
         solution = []
         for i in range(1, self.puzzle.max_num + 1):
-            if not self.puzzle.find_coordinates(i):
+            if i not in self.puzzle.fixed_nums:
                 solution.append(i)
         population = []
         for i in range(population_size):
@@ -113,13 +119,17 @@ class Behaviour(GeneticAlgorithmBehaviour):
         gene_values[i1], gene_values[i2] = gene_values[i2], gene_values[i1]
         return Gene(gene_values, self.objective(gene_values))
 
-    def is_goal(self, gene: Gene) -> bool:
+    def is_goal(self, gene: Gene, t=False) -> bool:
         self.puzzle.set_empty_cells(gene.values)
         for i in range(1, self.puzzle.max_num):
             if self.puzzle.pairwise_distances[self.puzzle.find_coordinates(i), self.puzzle.find_coordinates(i + 1)] != 1:
+                if t:
+                    print('find_c '+str(i))
                 return False
         for cell1, cell2 in self.puzzle.dots:
             if not self.puzzle.is_successor(cell1, cell2):
+                if t:
+                    print('is_s '+str(cell1)+'  '+str(cell2))
                 return False
         return True
 
@@ -128,9 +138,18 @@ with open('input1.txt') as f:
     puzzle = Puzzle.parse(f.read())
 
 behaviour = Behaviour(puzzle)
+#puzzle.set_empty_cells([31, 12, 29, 32, 13, 10, 9, 33, 14, 16, 8, 27, 34, 17, 7, 25, 35, 18, 24, 2, 4, 22, 21, 20])
+
 model = GeneticAlgorithmModel(behaviour, 1000, 0.1, 2)
-objective_values = model.fit(300, metrics=['best_objective'])  # 'mutates', 'crossovers', ...
+objective_values = model.fit(2, metrics=['best_objective'])  # 'mutates', 'crossovers', ...
+print(puzzle.find_coordinates(7))
+draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells)
+
 best_solution = model.best_solution()
 puzzle.set_empty_cells(best_solution.values)
 print(behaviour.fitness_evaluations)
+print(behaviour.is_goal(best_solution, True))
+
 draw_puzzle(str(puzzle), behaviour.puzzle.empty_cells, objective_values)
+
+
