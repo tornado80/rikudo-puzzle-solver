@@ -5,6 +5,7 @@ from PySide2.QtCore import Qt, QPointF
 from PySide2.QtGui import QBrush, QPen, QPolygonF
 from PySide2.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsLineItem, \
     QGraphicsPolygonItem, QGraphicsTextItem, QGraphicsEllipseItem
+from canvas import MplCanvas
 from window_ui import Ui_MainWindow
 from puzzle import *
 
@@ -34,29 +35,40 @@ class HexCell(QGraphicsPolygonItem):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, solved_puzzle: str = None, solved_cells: List[Cell] = None):
+    def __init__(self, solved_puzzle: str = None, solved_cells: List[Cell] = None, objective_values: List[int] = None):
         super().__init__()
         self.setupUi(self)
         self.showMaximized()
-        self.pushButton.clicked.connect(self.pushButton_clicked)
+        self.draw_button.clicked.connect(self.draw_button_clicked)
         self.scene: QGraphicsScene = QGraphicsScene()
-        self.graphicsView.setScene(self.scene)
+        self.graphics_view.setScene(self.scene)
         self.cells: Dict[Cell, HexCell] = {}
         if solved_puzzle:
-            self.plainTextEdit.setPlainText(solved_puzzle)
+            self.puzzle_plain_text_edit.setPlainText(solved_puzzle)
             self.do_draw_puzzle()
             if solved_cells:
                 self.highlight_solved_cells(solved_cells)
+                self.solved_cells_plain_text_edit.setPlainText("\n".join(f"{i} {j}" for i, j in solved_cells))
+        if objective_values:
+            self.canvas.axes.plot(range(len(objective_values)), objective_values)
+            self.canvas.axes.set_xlabel('Epoch')
+            self.canvas.axes.set_ylabel('Fitness')
+            self.canvas.axes.set_title('Convergence of Fitness per Epoch')
 
     def highlight_solved_cells(self, solved_cells: List[Cell]):
         for solved_cell in solved_cells:
             self.cells[(solved_cell[0], solved_cell[1])].setBrush(QBrush(Qt.white))
 
-    def pushButton_clicked(self):
+    def draw_button_clicked(self):
         self.do_draw_puzzle()
+        cells = []
+        for line in self.solved_cells_plain_text_edit.toPlainText().splitlines():
+            x, y = map(int, line.split())
+            cells.append((x, y))
+        self.highlight_solved_cells(cells)
 
     def do_draw_puzzle(self):
-        puzzle = Puzzle.parse(self.plainTextEdit.toPlainText())
+        puzzle = Puzzle.parse(self.puzzle_plain_text_edit.toPlainText())
         self.scene.clear()
         self.cells.clear()
         r = self.spinBox.value()
@@ -98,20 +110,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class App(QApplication):
-    def __init__(self, solved_puzzle: str = None, solved_cells: List[Cell] = None):
+    def __init__(self, solved_puzzle: str = None, solved_cells: List[Cell] = None, objective_values: List[int] = None):
         super().__init__()
-        self.main_window = MainWindow(solved_puzzle, solved_cells)
+        self.main_window = MainWindow(solved_puzzle, solved_cells, objective_values)
         self.main_window.show()
 
 
 def draw_puzzle(solved_puzzle: str, solved_cells: List[Cell] = None, objective_values: List[int] = None):
-    App(solved_puzzle, solved_cells).exec_()
+    App(solved_puzzle, solved_cells, objective_values).exec_()
 
-#import matplotlib.pyplot as plt
-#plt.plot(range(len(r)), r)
-#plt.xlabel('epochs')
-#plt.ylabel('objective value')
-#plt.show()
 
 if __name__ == "__main__":
     app = App()
