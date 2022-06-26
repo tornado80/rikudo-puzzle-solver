@@ -34,7 +34,7 @@ class HexCell(QGraphicsPolygonItem):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, solved_puzzle: str = None, solved_cells: List[List] = None):
+    def __init__(self, solved_puzzle: str = None, solved_cells: List[Cell] = None):
         super().__init__()
         self.setupUi(self)
         self.showMaximized()
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if solved_cells:
                 self.highlight_solved_cells(solved_cells)
 
-    def highlight_solved_cells(self, solved_cells: List[List]):
+    def highlight_solved_cells(self, solved_cells: List[Cell]):
         for solved_cell in solved_cells:
             self.cells[(solved_cell[0], solved_cell[1])].setBrush(QBrush(Qt.white))
 
@@ -98,15 +98,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class App(QApplication):
-    def __init__(self, solved_puzzle: str = None, solved_cells: List[List] = None):
+    def __init__(self, solved_puzzle: str = None, solved_cells: List[Cell] = None):
         super().__init__()
         self.main_window = MainWindow(solved_puzzle, solved_cells)
         self.main_window.show()
 
 
-def draw_puzzle(solved_puzzle: str, solved_cells: List[Cell] = None):
+def draw_puzzle(solved_puzzle: str, solved_cells: List[Cell] = None, objective_values: List[int] = None):
     App(solved_puzzle, solved_cells).exec_()
 
+#import matplotlib.pyplot as plt
+#plt.plot(range(len(r)), r)
+#plt.xlabel('epochs')
+#plt.ylabel('objective value')
+#plt.show()
 
 if __name__ == "__main__":
     app = App()

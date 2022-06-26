@@ -71,7 +71,7 @@ class GeneticAlgorithmModel:
             print(' ,best_objective=', self.population[t].values, end='')
         print('\n')
 
-    def fit(self, epochs, metrics=[]):
+    def fit(self, epochs, metrics=None):
         epoch = 1
         self.population = self.__behaviour.random_population(self.__population_size)
         self.objectives = [t.objective_val for t in self.population]
@@ -111,5 +111,5 @@ class GeneticAlgorithmModel:
 
         return best_objectives
 
-    def best_sol(self):
+    def best_solution(self):
         return self.__choose_best(1)[0]

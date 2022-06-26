@@ -21,6 +21,7 @@ class Puzzle:
         self.max_num: int = max_num
         self.row_count, self.column_count = dimensions
         self.pairwise_distances: dict[(Cell, Cell): int] = {}
+        self.calculate_cells_pairwise_distances()
 
     def __str__(self):
         lines = [f"{self.row_count} {self.column_count} {self.max_num}"]
@@ -32,6 +33,7 @@ class Puzzle:
         return "\n".join(lines)
 
     def set_empty_cells(self, filled_cells: List[int]):
+        # TODO: efficient lookup : we can make empty_cells hashmap (20 * 36)
         for i, filled_cell in enumerate(filled_cells):
             self.cells[self.empty_cells[i][0]][self.empty_cells[i][1]] = filled_cell
 
